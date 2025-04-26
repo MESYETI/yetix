@@ -1,0 +1,10 @@
+include "cores/select.cal"
+include "std/io.cal"
+include "syscall.cal"
+include "args.cal"
+
+let Array arr
+&arr get_params
+&arr print_str new_line
+
+sys_exit

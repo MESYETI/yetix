@@ -1,0 +1,12 @@
+enum SysCall : addr
+	Execute = 0x10
+	Exit    = 0x12
+end
+
+inline man sys_execute ptr Array arr begin
+	unsafe addr arr begin SysCall.Execute @ call end
+end
+
+inline man sys_exit begin
+	unsafe begin SysCall.Exit @ call end
+end

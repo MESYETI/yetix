@@ -1,0 +1,29 @@
+include "cores/select.cal"
+include "std/io.cal"
+include "uxn/file.cal"
+include "syscall.cal"
+include "args.cal"
+
+func error main begin
+	let Array arr
+	&arr get_params
+	&arr 0 uxn_open_file
+
+	let cell i
+	let cell fileSize
+	let u8   ch
+	0 uxn_file_size -> fileSize
+
+	while i fileSize < do
+		&ch 1 0 uxn_read_file
+		ch print_ch
+		i 1 + -> i
+	end
+end
+
+try main
+catch
+	&_cal_exception.msg print_str new_line
+end
+
+sys_exit

@@ -1,0 +1,5 @@
+include "std/array.cal"
+
+func get_params ptr Array arr begin
+	0xAFFF b@ 1 0xB000 @ arr create_array
+end

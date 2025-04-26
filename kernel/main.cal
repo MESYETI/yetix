@@ -1,0 +1,33 @@
+include "cores/select.cal"
+include "std/io.cal"
+include "uxn/file.cal"
+
+enum SysCall : addr
+	Execute = 0x10
+	Exit    = 0x12
+end
+
+func sys_execute ptr Array path begin
+	path 0 uxn_open_file
+	0x100 0 uxn_file_size 0 uxn_read_file
+	unsafe begin asm
+		"#ffff .vsp STZ2"
+		"#0100 JMP2"
+	end end
+end
+
+func sys_exit begin
+	c"bin/sh" sys_execute
+	unsafe begin asm
+		"#ffff .vsp STZ2" # reset callisto state
+	end end
+end
+
+# set syscalls
+&sys_execute SysCall.Execute !
+&sys_exit    SysCall.Exit    !
+
+c"Yetix 1.0" print_str new_line
+
+# run shell
+"bin/sh" unsafe addr path begin 0x10 @ call end

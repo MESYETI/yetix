@@ -1,0 +1,87 @@
+include "cores/select.cal"
+include "std/io.cal"
+include "std/array.cal"
+include "uxn/uxn.cal"
+include "uxn/file.cal"
+include "uxn/console.cal"
+include "syscall.cal"
+
+"$ " print_str
+
+let Array input
+const INPUT_LENGTH   0xAFFF
+const INPUT_PTR      0xB000
+const INPUT_CONTENTS 0xB002
+128 u8.sizeOf INPUT_CONTENTS &input create_array
+let cell inputIndex
+let Array finalCmd
+
+# unsafe but whatever
+func append ptr Array src ptr Array dest begin
+	let cell writeStart
+	dest.length -> writeStart
+	src.length dest.length + -> dest.length
+	let cell i
+
+	while i src.length < do
+		i src a@ i writeStart + dest a!
+		i 1 + -> i
+	end
+end
+
+inline end_vec begin
+	unsafe begin asm "#ffff .vsp STZ2" end end
+	uxn_brk
+end
+
+func console_vector begin
+	let cell ch
+	uxn_console_read -> ch
+	ch inputIndex &input a!
+	inputIndex 1 + -> inputIndex
+
+	if ch 10 = then
+		inputIndex -> input.length
+
+		if input.length 0 = then
+			end_vec
+		end
+
+		let Array command
+		let Array parameter
+		let cell  index
+
+		if ' ' &input array_contains then
+			&input &command a<
+			' ' &input array_find -> index
+			index -> command.length
+
+			input.length index - 2 - u8.sizeOf input.elements index + 1 + &parameter
+			create_array
+
+			parameter.length INPUT_LENGTH b!
+			parameter.elements INPUT_PTR !
+		else
+			0 INPUT_LENGTH b!
+			&input &command a<
+			input.length 1 - -> command.length
+		end
+
+		0 u8.sizeOf anon array 128 u8 &finalCmd create_array
+		"bin/" &finalCmd append
+		&command &finalCmd append
+		&finalCmd unsafe addr path begin 0x10 @ call end
+
+		# reset
+		0 -> inputIndex
+		0 0 0 &parameter create_array
+		128 u8.sizeOf INPUT_CONTENTS &input create_array
+		c"\n$ " print_str
+	end
+
+	end_vec
+end
+
+&console_vector uxn_set_console_vector
+
+uxn_brk
