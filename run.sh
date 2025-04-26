@@ -1,3 +1,3 @@
 cd yetix
-uxncli boot.rom
+uxncli kernel.rom
 cd ..

@@ -4,7 +4,7 @@ mkdir -p yetix/home
 ASM="uxncli ~/roms/drifblim.rom"
 
 echo "===> Building kernel"
-cac kernel/main.cal -i std -b uxn -o yetix/boot.rom -O --org C000
+cac kernel/main.cal -i std -b uxn -o yetix/kernel.rom -O --org C000
 
 for file in programs/*.cal; do
 	echo "===> Building" $(basename $file .cal)
